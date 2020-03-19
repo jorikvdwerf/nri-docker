@@ -59,7 +59,7 @@ func (e *FargateFetcher) InspectContainer(containerID string) (docker.Container,
 	var taskResponse TaskResponse
 	var containerResponse ContainerResponse
 
-	// Try to load container from the cache cpuStore.
+	// Try to load container from the cache store.
 	_, err := e.containerStore.Get(containerID, &containerResponse)
 	if err == nil {
 		e.logger.Debugf("found container %s in cache cpuStore", containerID)
