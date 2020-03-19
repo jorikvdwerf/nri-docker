@@ -3,6 +3,7 @@ package nri
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
@@ -16,7 +17,7 @@ type FargateSampler struct {
 
 // SampleAll will sample all the information this sampler can fetch and populate it in the given integration.
 func (f *FargateSampler) SampleAll(i *integration.Integration) error {
-	httpClient := &http.Client{}
+	httpClient := &http.Client{Timeout: 5 * time.Second}
 	fetcher, err := aws.NewFargateFetcher(httpClient, i.Logger())
 	if err != nil {
 		return fmt.Errorf("could not create fargate fetcher: %v", err)
