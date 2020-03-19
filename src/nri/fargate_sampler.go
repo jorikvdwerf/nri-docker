@@ -3,6 +3,7 @@ package nri
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/newrelic/nri-docker/src/raw/aws"
 )
+
+const clusterNameLabel = "com.amazonaws.ecs.cluster"
 
 // FargateSampler is a sampler to get container data from an HTTP endpoint.
 type FargateSampler struct {
@@ -54,8 +57,15 @@ func (f *FargateSampler) SampleAll(i *integration.Integration) error {
 			i.Logger().Errorf("could not find metadata for container %s: %v", containerID, err)
 			continue
 		}
+		// We have to standardize the cluster name label because in the EC2 launch type it's purely the cluster name. In
+		// Fargate though it's the complete cluster's ARN.
+		containerMetadata.Labels[clusterNameLabel] = clusterNameFromARN(containerMetadata.Labels[clusterNameLabel])
 		populate(ms, attributes(containerMetadata))
 		populate(ms, labels(containerMetadata))
 	}
 	return nil
+}
+
+func clusterNameFromARN(clusterARN string) string {
+	return strings.Split(clusterARN, "/")[1]
 }
